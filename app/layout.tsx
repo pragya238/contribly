@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./reference-theme.css";
 
 export const metadata: Metadata = {
   title: "Contribly — Your first open-source contribution",
