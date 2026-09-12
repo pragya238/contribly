@@ -40,3 +40,14 @@ Preferences, saved issues and contribution records are stored in localStorage on
 `components/discovery.tsx` owns search controls and isolated result sets. `lib/discovery.ts` validates scopes, builds GitHub queries, maps API records, handles pagination, and stores sourced program mappings. Saved records are merged by issue ID independently of the current search. Program affiliations are never inferred from issue keywords.
 
 Run discovery integration-unit checks with Node 22.13+: `node --experimental-strip-types --test tests/discovery.test.mjs`. The tests use deterministic API fixtures; live query smoke checks were also performed for all-GitHub, GSoC, and LFX searches.
+
+
+## Account personalization (MongoDB integration)
+
+The account implementation uses the existing platform Sign in with ChatGPT identity. `app/page.tsx` is now server-rendered per request and renders the sign-in screen or the authenticated client. `app/api/workspace/route.ts` authenticates every read/write, checks same-origin writes, validates input, and proxies the server-derived user ID to the MongoDB backend over HTTPS. Browser-submitted ownership fields are rejected.
+
+`backend/README.md` documents Node 24 hosting and the two sides of secret configuration. This integration must not replace the live demo until the backend is deployed and the Sites runtime variables are configured. No database credentials are committed. D1 is not used for account storage.
+
+`hooks/use-account-workspace.ts` serializes and debounces saves, reports failures, prevents leaving silently with unsaved changes, and rejects cross-device revision conflicts. Old device-local demo data is only imported through an explicit account action.
+
+Account behavior tests: `node --experimental-strip-types --test tests/accounts.test.mjs`. These use an in-memory MongoDB collection substitute to verify request authorization, per-user isolation, validation and revision conflicts. They do not establish connectivity to an Atlas cluster.

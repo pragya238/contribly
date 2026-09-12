@@ -1,0 +1,9 @@
+{
+  "name": "contribly-account-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": { "start": "node server.mjs" },
+  "dependencies": { "mongodb": "^6.20.0" }
+}
