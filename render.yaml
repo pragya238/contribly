@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: contribly-account-api
+    runtime: node
+    plan: free
+    branch: codex/mongodb-auth
+    buildCommand: npm ci --ignore-scripts && npm ci --prefix backend --ignore-scripts
+    startCommand: node backend/server.mjs
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: contribly
+      - key: ACCOUNT_SERVICE_SECRET
+        generateValue: true

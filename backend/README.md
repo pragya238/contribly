@@ -4,6 +4,8 @@ This Node 24 service stores Contribly account workspaces in MongoDB. The Sites f
 
 ## Deploy from this GitHub repository
 
+This repository includes a `render.yaml` Blueprint. In Render, choose **New → Blueprint**, select the GitHub repository, and Render will create the Node service with its health check and generated service secret. Create the MongoDB Atlas database separately, then paste its connection string into the Render service’s `MONGODB_URI` secret. Do not paste that value into GitHub or chat.
+
 Use a Node service with the repository root as the working directory:
 
 - Build: `npm ci --ignore-scripts && npm ci --prefix backend --ignore-scripts`
