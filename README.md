@@ -1,6 +1,6 @@
 # Contribly
 
-A beginner-focused contribution workspace built with React, TypeScript, Vinext, and accessible Radix/Shadcn primitives.
+A beginner-focused contribution workspace built with Next.js, React, TypeScript, and accessible Radix/Shadcn primitives. The frontend runs on Vercel; the account API runs on Render and stores workspaces in MongoDB Atlas.
 
 ## Run
 
@@ -29,7 +29,7 @@ This is an MVP demo. Initial issue tasks and repository statistics are illustrat
 
 The mentor is a transparent deterministic teaching guide, not a connected LLM. It does not inspect code or diagnose arbitrary errors. Replace `mentorReply` in `lib/contribution.ts` with a server-backed model adapter to enable an AI service; never put API keys in browser code.
 
-Preferences, saved issues and contribution records are stored in localStorage on this browser only. No account sync is implemented. PR submission/review/merge actions are self-reported; this app does not post to GitHub or automatically verify merges.
+Preferences, saved issues and contribution records are saved to the signed-in account in MongoDB. Existing browser-only demo data can be imported explicitly from the account screen. PR submission/review/merge actions are self-reported; this app does not post to GitHub or automatically verify merges.
 
 ## Architecture
 
@@ -44,9 +44,9 @@ Run discovery integration-unit checks with Node 22.13+: `node --experimental-str
 
 ## Account personalization (MongoDB integration)
 
-The account implementation uses the existing platform Sign in with ChatGPT identity. `app/page.tsx` is now server-rendered per request and renders the sign-in screen or the authenticated client. `app/api/workspace/route.ts` authenticates every read/write, checks same-origin writes, validates input, and proxies the server-derived user ID to the MongoDB backend over HTTPS. Browser-submitted ownership fields are rejected.
+Auth.js verifies GitHub sign-in and maintains an encrypted session cookie. New visitors start at the themed `/login` page, with a signup option; their first GitHub sign-in creates their identity. Authenticated visitors see the personalized home page. The stable account key is `github:<GitHub account ID>`; supplied identity headers are never trusted. `app/api/workspace/route.ts` authenticates every read/write, checks same-origin writes, validates input, and proxies the session-derived user ID to the MongoDB backend over HTTPS. Browser-submitted ownership fields are rejected.
 
-`backend/README.md` documents Node 24 hosting and the two sides of secret configuration. This integration must not replace the live demo until the backend is deployed and the Sites runtime variables are configured. No database credentials are committed. D1 is not used for account storage.
+`backend/README.md` documents Node 24 hosting and secret configuration. In Vercel, configure `ACCOUNT_API_URL`, `ACCOUNT_SERVICE_SECRET`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, and `AUTH_GITHUB_SECRET`. Register the GitHub OAuth callback as `https://<production-domain>/api/auth/callback/github`. Import the repository root as Next.js and deploy `main`. Never put these secrets in browser variables or Git. GitHub accounts use separate identities from the retired ChatGPT login; existing ChatGPT workspaces are retained and are not automatically reassigned by email.
 
 `hooks/use-account-workspace.ts` serializes and debounces saves, reports failures, prevents leaving silently with unsaved changes, and rejects cross-device revision conflicts. Old device-local demo data is only imported through an explicit account action.
 

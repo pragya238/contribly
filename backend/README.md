@@ -1,6 +1,6 @@
 # MongoDB account API
 
-This Node 24 service stores Contribly account workspaces in MongoDB. The Sites frontend uses its existing Sign in with ChatGPT identity and forwards authenticated requests over HTTPS. MongoDB is never contacted from the browser.
+This Node 24 service stores Contribly account workspaces in MongoDB. The Vercel frontend verifies GitHub sessions with Auth.js and forwards authenticated requests over HTTPS. MongoDB is never contacted from the browser.
 
 ## Deploy from this GitHub repository
 
@@ -20,7 +20,7 @@ Configure backend secrets in the hosting provider's secret settings:
 - `ACCOUNT_SERVICE_SECRET`: a randomly generated secret of at least 32 characters.
 - `PORT`: supplied by your host, or defaults to 3001.
 
-In Sites runtime settings configure:
+In Vercel environment settings configure:
 
 - `ACCOUNT_API_URL`: the backend's HTTPS origin.
 - `ACCOUNT_SERVICE_SECRET`: the same backend secret.
@@ -31,7 +31,7 @@ The service authorizes the proxy before accepting its user ID. Workspace documen
 
 ## Rollout
 
-Do not publish the account-gated frontend until the backend is deployed, Atlas connectivity succeeds, and both Sites variables are configured. The existing published app remains available until that point. The local implementation is a prepared integration, not a working database connection until configured.
+Deploy the frontend after Atlas connectivity succeeds and the Vercel backend and authentication variables are configured. Vercel builds the repository root with `npm run build`. The backend remains a separate Node process on Render.
 
 ## Existing demo progress
 

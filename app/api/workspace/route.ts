@@ -1,10 +1,12 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
-import { env } from 'cloudflare:workers';
+import { auth } from '@/auth';
 import { saveWorkspaceSchema } from '@/lib/account-state';
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 120;
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store',Vary:'Cookie','X-Content-Type-Options':'nosniff'}});
 async function proxy(request?:Request){
-  const user=await getChatGPTUser();
+  const session=await auth();
+  const user=session?.user?.id?{userId:session.user.id}:null;
   if(!user)return json({error:'Sign in to access your personal workspace.'},401);
   let body;
   if(request){
@@ -14,9 +16,9 @@ async function proxy(request?:Request){
     try{const raw=await request.text();if(raw.length>600000)return json({error:'Workspace is too large.'},413);const parsed=saveWorkspaceSchema.safeParse(JSON.parse(raw));if(!parsed.success)return json({error:'Invalid workspace data or account capacity exceeded.'},400);body=JSON.stringify(parsed.data);}catch{return json({error:'Invalid JSON.'},400);}
   }
   try{
+    const env=process.env;
     const url=new URL(env.ACCOUNT_API_URL||'');
     if(url.protocol!=='https:'||url.username||url.password||!env.ACCOUNT_SERVICE_SECRET||env.ACCOUNT_SERVICE_SECRET.length<32)throw new Error('Account service not configured');
-    // Free Render instances can take over 50 seconds to resume after inactivity.
     const response=await fetch(new URL('/workspace',url),{method:request?'PUT':'GET',redirect:'error',headers:{Authorization:`Bearer ${env.ACCOUNT_SERVICE_SECRET}`,'X-Contribly-User-Id':user.userId,'Content-Type':'application/json'},body,signal:AbortSignal.timeout(90000)});
     if(![200,400,409,413].includes(response.status))throw new Error('Account backend unavailable');
     return json(await response.json(),response.status);
